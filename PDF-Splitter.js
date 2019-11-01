@@ -1,11 +1,10 @@
 // PDF Splitter
 var RESPONSES = {};
-var FILENAME;
-var OUTPUTS = ['', 'sect1', 'sect2'];
 var PATHS = {
 	defaultPath: '/T/Documents/RDs(scanned)',
 	series8Folder: 'Q100-200-300',
-	series84Folder: 'Q400'
+	series84Folder: 'Q400',
+	rootPath: this.path.replace(this.documentFileName, '')
 };
 var PROMPTS = [
 	{
@@ -56,7 +55,7 @@ for (var i = 0; i < PROMPTS.length; i++) {
 }
 
 // Set Filename
-FILENAME = 'rd' + RESPONSES.seriesNum + '-' + RESPONSES.ataChapterNum + '-' + RESPONSES.rdSequenceNum + 'iss' + RESPONSES.rdIssueNum;
+var FILENAME = 'rd' + RESPONSES.seriesNum + '-' + RESPONSES.ataChapterNum + '-' + RESPONSES.rdSequenceNum + 'iss' + RESPONSES.rdIssueNum;
 
 // Set Series Folder
 if (RESPONSES.seriesNum === '8') {
@@ -69,37 +68,36 @@ if (RESPONSES.seriesNum === '8') {
 
 // Set Output Paths
 PATHS.outputPath = RESPONSES.rootOutputPath + '/' + PATHS.seriesFolder + '/' + RESPONSES.ataChapterNum + '/';
-PATHS.rootPath = this.path.replace(this.documentFileName, ''); 
 RESPONSES.sectionLastPage = parseInt(RESPONSES.sectionLastPage);
+
+// Set Outputs
+var OUTPUTS = [
+	{
+		start: 0,
+		end: RESPONSES.sectionLastPage - 1,
+		path: PATHS.rootPath + FILENAME,
+		suffix: ''
+	},
+	{
+		start: 1,
+		end: RESPONSES.sectionLastPage - 1,
+		path: PATHS.outputPath + FILENAME,
+		suffix: 'sect1'
+	},
+	{
+		start: RESPONSES.sectionLastPage,
+		end: this.numPages - 1,
+		path: PATHS.outputPath + FILENAME,
+		suffix: 'sect2'
+	},
+];
 
 // Split the PDF
 for (var j = 0; j < OUTPUTS.length; j++) {
 
-	// First PDF
-	if (j === 0) {
-		
-		try {
-			this.extractPages({ nStart: 0, nEnd: RESPONSES.sectionLastPage - 1, cPath: PATHS.rootPath + FILENAME + OUTPUTS[j] + '.pdf' });
-		} catch (e) {
-			console.println(e);
-		}
-	}
-
-	// Second PDF
-	else if (j === 1) {
-		try {
-			this.extractPages({ nStart: 1, nEnd: RESPONSES.sectionLastPage - 1, cPath: PATHS.outputPath + FILENAME + OUTPUTS[j] + '.pdf' });
-		} catch (e) {
-			console.println(e);
-		}
-	}
-
-	// Third PDF
-	else if (j === 2) {
-		try {
-			this.extractPages({ nStart: RESPONSES.sectionLastPage, nEnd: this.numPages - 1, cPath: PATHS.outputPath + FILENAME + OUTPUTS[j] + '.pdf' });
-		} catch (e) {
-			console.println(e);
-		}
+	try {
+		this.extractPages({ nStart: OUTPUTS[j].start, nEnd: OUTPUTS[j].end, cPath: OUTPUTS[j].path + OUTPUTS[j].suffix + '.pdf' });
+	} catch (e) {
+		console.println(e);
 	}
 }
