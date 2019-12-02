@@ -1,5 +1,6 @@
 /*
 * Main RD Extract and Email Function
+* Returns: boolean (true or false)
 */
 function rdExtractAndEmail(){
 	// 1. Get formatting origin
@@ -29,21 +30,27 @@ function rdExtractAndEmail(){
 	var PATHS = getPaths(FILENAME);
 	if (!PATHS) { return false; }
 
-	// 4. Get Section 1 Last Page
+	// 4. Get Bill Status
+	var BILL = getBillStatus();
+	if (BILL === false) { return false; }
+
+	// 5. Get Section 1 Last Page
 	var SECTION_LASTPAGE = getSection1LastPage();
 	if (!SECTION_LASTPAGE) { return false; }
 
-	// 5. Get Outputs
-	var OUTPUTS = getOutputs(FILENAME, PATHS, SECTION_LASTPAGE);
+	// 6. Get Outputs
+	var OUTPUTS = getOutputs(FILENAME, PATHS, BILL, SECTION_LASTPAGE);
 	if (!OUTPUTS) { return false; }
 
-	// 6. Extract PDFS
+	// 7. Extract PDFS
 	var EXTRACTED_PDFS = extractPDFs(OUTPUTS);
 	if (!EXTRACTED_PDFS) { return false; }
 
-	// 7. Draft an e-mail
-	var DRAFT_EMAIL = createDraftEmail(OUTPUTS[0].path);
+	// 8. Draft an e-mail
+	var DRAFT_EMAIL = createDraftEmail(FILENAME + '.pdf');
 	if (!DRAFT_EMAIL) { return false; }
+
+	return true;
 }
 
 /*
@@ -85,7 +92,7 @@ function getFilenameFromSourceFile(){
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
 	var rdSequenceNumArray	= filenameArray[2].split('iss');
 	var rdSequenceNum		= rdSequenceNumArray[0];			// Numbers before 'iss'
-	var rdIssueNumArray		= rdSequenceNumArray[1].split('Sect');
+	var rdIssueNumArray		= rdSequenceNumArray[1].split('sect');
 	var rdIssueNum			= rdIssueNumArray[0];				// Numbers after 'iss'
 
 	return 'rd' + seriesNum + '-' + ataChapterNum + '-' + rdSequenceNum + 'iss' + rdIssueNum;
@@ -178,7 +185,37 @@ function getPaths(filename){
 }
 
 /*
-* 4. Get the number of the last page of section 1
+* 4. Find out if the first page is a bill
+* Returns: integer (0 or 1)
+*/
+function getBillStatus(){
+	var BILL_STATUS = app.alert(
+		'Is the first page of this PDF a bill?',
+		2,
+		3,
+		'First page a bill?'
+	);
+
+	// Error checking
+	if (isNaN(BILL_STATUS)) {
+		console.println('Error: getBillStatus did not return a number');
+		return false;
+	}
+
+	switch (BILL_STATUS) {
+	
+	case 4: // Yes
+		return 1;
+	case 3: // No
+		return 0;
+	default: // Default (Cancel or exited)
+		console.println('Error: No option selected in getBillStatus');
+		return false;
+	}
+}
+
+/*
+* 5. Get the number of the last page of section 1
 * Returns: integer
 */
 function getSection1LastPage(){
@@ -204,11 +241,11 @@ function getSection1LastPage(){
 }
 
 /*
-* 5. Get outputs
-* Params: filename(string), paths(object), sectionLastPage(integer)
+* 6. Get outputs
+* Params: filename(string), paths(object), bill(integer), sectionLastPage(integer)
 * Returns: array
 */
-function getOutputs(filename, paths, sectionLastPage){
+function getOutputs(filename, paths, bill, sectionLastPage){
 	
 	// Error checking
 	if (!filename) {
@@ -218,6 +255,11 @@ function getOutputs(filename, paths, sectionLastPage){
 
 	if (!paths) {
 		console.println('Error: No paths object passed to getOutputs');
+		return false;
+	}
+
+	if (isNaN(bill)) {
+		console.println('Error: No bill integer passed to getOutputs');
 		return false;
 	}
 
@@ -235,7 +277,7 @@ function getOutputs(filename, paths, sectionLastPage){
 			suffix:	''
 		},
 		{
-			start:	1,
+			start:	bill,
 			end:	sectionLastPage - 1,
 			path:	paths.outputPath + filename,
 			suffix:	'sect1'
@@ -252,7 +294,7 @@ function getOutputs(filename, paths, sectionLastPage){
 }
 
 /*
-* 6. Extract PDFs
+* 7. Extract PDFs
 * Params: outputs(array)
 * Returns: boolean (true or false)
 */
@@ -276,7 +318,7 @@ function extractPDFs(outputs){
 }
 
 /*
-* 7. Create Draft E-mail
+* 8. Create Draft E-mail
 * Params: filename(string)
 * Returns: boolean (true or false)
 */
@@ -293,7 +335,7 @@ function createDraftEmail(filename){
 			promptLabel:		'ADRNum',
 			promptQuestion:		'Enter the ADR Number',
 			promptTitle:		'ADR Number',
-			promptExpectedType:	'number',
+			promptExpectedType:	'string',
 			promptDefaultValue:	''
 		},
 		{
@@ -372,4 +414,4 @@ app.addToolButton({
 	cTooltext:	'Extract and Save Sect 1 & 2, Send RD to THD',
 	cEnable:	true,
 	nPos:		-1
-});
+}); 
