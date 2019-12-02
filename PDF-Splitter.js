@@ -2,40 +2,48 @@
 * Main RD Extract and Email Function
 */
 function rdExtractAndEmail(){
-	// 1. Get formatting style
+	// 1. Get formatting origin
 	var FORMAT_ORIGIN = promptForFormatOrigin();
-	var FILENAME = '';
+	if (!FORMAT_ORIGIN) { return false; }
 
 	// 2. Get filename based on type of formatting
+	var FILENAME = '';
 	switch (FORMAT_ORIGIN) {
 	
 	case 4: // Yes (from filename)
 		FILENAME = getFilenameFromSourceFile();
+		if (!FILENAME) { return false; }
 		break;
 	
 	case 3: // No (from user input)
 		FILENAME = getFilenameFromUserPrompts();
+		if (!FILENAME) { return false; }
 		break;
 	
 	default: // Default (Cancel or exited)
-		console.println('Error: No formatting style selected');
+		console.println('Error: No formatting origin selected');
 		return false;
 	}
 
 	// 3. Get Paths
 	var PATHS = getPaths(FILENAME);
+	if (!PATHS) { return false; }
 
 	// 4. Get Section 1 Last Page
 	var SECTION_LASTPAGE = getSection1LastPage();
+	if (!SECTION_LASTPAGE) { return false; }
 
 	// 5. Get Outputs
 	var OUTPUTS = getOutputs(FILENAME, PATHS, SECTION_LASTPAGE);
+	if (!OUTPUTS) { return false; }
 
 	// 6. Extract PDFS
-	extractPDFs(OUTPUTS);
+	var EXTRACTED_PDFS = extractPDFs(OUTPUTS);
+	if (!EXTRACTED_PDFS) { return false; }
 
 	// 7. Draft an e-mail
-	createDraftEmail(OUTPUTS[0].path);
+	var DRAFT_EMAIL = createDraftEmail(OUTPUTS[0].path);
+	if (!DRAFT_EMAIL) { return false; }
 }
 
 /*
@@ -43,12 +51,20 @@ function rdExtractAndEmail(){
 * Returns: integer (2,3,4)
 */
 function promptForFormatOrigin() {
-	return app.alert(
+	var FORMAT_ORIGIN = app.alert(
 		'Has this document been saved using a \'rdX-XX-XXXissXSect1,2,bill\' format?\nYes - The script will pull RD information from the file name.\nNo - The script will prompt for RD information.',
 		2,
 		3,
 		'RD info from filename or prompts?'
 	);
+
+	// Error checking
+	if (isNaN(FORMAT_ORIGIN)) {
+		console.println('Error: promptForFormatOrigin did not return a number');
+		return false;
+	}
+
+	return FORMAT_ORIGIN;
 }
 
 /*
@@ -56,11 +72,18 @@ function promptForFormatOrigin() {
 * Returns: string
 */
 function getFilenameFromSourceFile(){
+
+	// Error checking
+	if (!documentFileName) {
+		console.println('Error: No documentFileName in getFilenameFromSourceFile');
+		return false;
+	}
+
 	// Example filename: rd84-53-5264iss31Sect1,2,bill.pdf
 	var filenameArray		= documentFileName.split('-');
 	var seriesNum			= filenameArray[0].substring(2);	// Numbers after 'rd'
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
-	var rdSequenceNumArray 	= filenameArray[2].split('iss');
+	var rdSequenceNumArray	= filenameArray[2].split('iss');
 	var rdSequenceNum		= rdSequenceNumArray[0];			// Numbers before 'iss'
 	var rdIssueNumArray		= rdSequenceNumArray[1].split('Sect');
 	var rdIssueNum			= rdIssueNumArray[0];				// Numbers after 'iss'
@@ -78,29 +101,39 @@ function getFilenameFromUserPrompts() {
 			promptLabel:		'seriesNum',
 			promptQuestion:		'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84',
 			promptTitle:		'Aircraft Series Number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'ataChapterNum',
 			promptQuestion:		'Enter the ATA Chapter:',
 			promptTitle:		'Aircraft ATA Chapter',
+			promptExpectedType: 'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'rdSequenceNum',
 			promptQuestion:		'Enter the RD Sequence Number:',
 			promptTitle:		'Aircraft RD Sequence Number',
+			promptExpectedType: 'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'rdIssueNum',
 			promptQuestion:		'Enter the RD Issue Number:',
 			promptTitle:		'Aircraft RD Issue Number',
+			promptExpectedType: 'number',
 			promptDefaultValue:	''
 		},
 	];
 
 	var FILENAME_RESPONSES = askUserPrompts(FILENAME_PROMPTS);
+
+	// Error checking
+	if (!FILENAME_RESPONSES) {
+		console.println('Error: askUserPrompts(FILENAME_PROMPTS) returned false');
+		return false;
+	}
 
 	return 'rd' + FILENAME_RESPONSES.seriesNum + '-' + FILENAME_RESPONSES.ataChapterNum + '-' + FILENAME_RESPONSES.rdSequenceNum + 'iss' + FILENAME_RESPONSES.rdIssueNum;
 }
@@ -111,6 +144,13 @@ function getFilenameFromUserPrompts() {
 * Returns: object
 */
 function getPaths(filename){
+
+	// Error checking
+	if (!filename) {
+		console.println('Error: No filename supplied to getPaths');
+		return false;
+	}
+
 	var PATHS = {
 		defaultPath:	'/torfps01.dehavilland.ca/techserv/structur/Documents/RDs(scanned)/',
 		series8Folder:	'Q100-200-300',
@@ -128,7 +168,8 @@ function getPaths(filename){
 	} else if (seriesNum === '84') {
 		PATHS.seriesFolder = PATHS.series84Folder;
 	} else {
-		console.println('Error: Incorrect series number entered');
+		console.println('Error: Incorrect series number entered for getPaths');
+		return false;
 	}
 
 	PATHS.outputPath = PATHS.defaultPath + '/' + PATHS.seriesFolder + '/' + ataChapterNum + '/';
@@ -146,11 +187,18 @@ function getSection1LastPage(){
 			promptLabel:		'sectionLastPage',
 			promptQuestion:		'Enter the last page number of Section 1:',
 			promptTitle:		'Section 1 - Last Page',
+			promptExpectedType: 'number',
 			promptDefaultValue:	''
 		},
 	];
 
 	var SECTION_RESPONSES = askUserPrompts(SECTION_PROMPTS);
+
+	// Error checking
+	if (!SECTION_RESPONSES) {
+		console.println('Error: askUserPrompts(SECTION_PROMPTS) returned false');
+		return false;
+	}
 
 	return parseInt(SECTION_RESPONSES.sectionLastPage);
 }
@@ -161,6 +209,23 @@ function getSection1LastPage(){
 * Returns: array
 */
 function getOutputs(filename, paths, sectionLastPage){
+	
+	// Error checking
+	if (!filename) {
+		console.println('Error: No filename string passed to getOutputs');
+		return false;
+	}
+
+	if (!paths) {
+		console.println('Error: No paths object passed to getOutputs');
+		return false;
+	}
+
+	if (!sectionLastPage || isNaN(sectionLastPage)) {
+		console.println('Error: No sectionLastPage integer passed to getOutputs');
+		return false;
+	}
+
 	// Set Outputs
 	var OUTPUTS = [
 		{
@@ -189,8 +254,16 @@ function getOutputs(filename, paths, sectionLastPage){
 /*
 * 6. Extract PDFs
 * Params: outputs(array)
+* Returns: boolean (true or false)
 */
 function extractPDFs(outputs){
+
+	// Error checking
+	if (typeof outputs != 'object' || !outputs.length) {
+		console.println('Error: No outputs array passed to extractPDFs');
+		return false;
+	}
+
 	for (var j = 0; j < outputs.length; j++) {
 		try {
 			this.extractPages({ nStart: outputs[j].start, nEnd: outputs[j].end, cPath: outputs[j].path + outputs[j].suffix + '.pdf' });
@@ -198,29 +271,47 @@ function extractPDFs(outputs){
 			console.println(e);
 		}
 	}
+
+	return true;
 }
 
 /*
 * 7. Create Draft E-mail
 * Params: filename(string)
+* Returns: boolean (true or false)
 */
 function createDraftEmail(filename){
+
+	// Error checking
+	if (!filename) {
+		console.println('Error: No filename string passed to createDraftEmail');
+		return false;
+	}
+
 	var EMAIL_PROMPTS = [
 		{
 			promptLabel:		'ADRNum',
 			promptQuestion:		'Enter the ADR Number',
 			promptTitle:		'ADR Number',
+			promptExpectedType: 'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'ADRUrgency',
 			promptQuestion:		'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
 			promptTitle:		'Urgency',
+			promptExpectedType: 'string',
 			promptDefaultValue:	''
 		},
 	];
 
 	var EMAIL_RESPONSES = askUserPrompts(EMAIL_PROMPTS);
+
+	// Error checking
+	if (!EMAIL_RESPONSES) {
+		console.println('Error: askUserPrompts(EMAIL_PROMPTS) returned false');
+		return false;
+	}
 
 	app.mailMsg({
 		bUI: true,
@@ -229,6 +320,8 @@ function createDraftEmail(filename){
 		cSubject: EMAIL_RESPONSES.ADRUrgency + ' ' + EMAIL_RESPONSES.ADRNum,
 		cMsg: 'THD,\n\nPlease forward attached ' + filename + ' to operator via ADR: ' + EMAIL_RESPONSES.ADRNum + '\n\nThanks and Regards'
 	});
+
+	return true;
 }
 
 /*
@@ -237,16 +330,35 @@ function createDraftEmail(filename){
 * Returns: object
 */
 function askUserPrompts(prompts){
+
+	// Error checking
+	if (!prompts.length) {
+		console.println('Error: No prompts array passed to askUserPrompts');
+		return false;
+	}
+
 	var RESPONSES = {};
 
 	for (var i = 0; i < prompts.length; i++) {
 		try {
-			RESPONSES[prompts[i].promptLabel] = app.response(prompts[i].promptQuestion, prompts[i].promptTitle, prompts[i].promptDefaultValue);
+			var promptResponse = app.response(prompts[i].promptQuestion, prompts[i].promptTitle, prompts[i].promptDefaultValue);
+
+			// Error checking
+			if (!promptResponse.length) {
+				throw 'No answer entered for question:' + prompts[i].promptQuestion;
+			}
+
+			if (prompts[i].promptExpectedType === 'number' && isNaN(promptResponse)) {
+				throw 'Number not entered for question:' + prompts[i].promptQuestion;
+			}
+
+			RESPONSES[prompts[i].promptLabel] = promptResponse;
 		} catch (e) {
-			console.println(e);
+			console.println('Error: ' + e);
+			return false;
 		}
 	}
-
+	
 	return RESPONSES;
 }
 
