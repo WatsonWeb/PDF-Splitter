@@ -108,21 +108,21 @@ function getFilenameFromUserPrompts() {
 			promptLabel:		'ataChapterNum',
 			promptQuestion:		'Enter the ATA Chapter:',
 			promptTitle:		'Aircraft ATA Chapter',
-			promptExpectedType: 'number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'rdSequenceNum',
 			promptQuestion:		'Enter the RD Sequence Number:',
 			promptTitle:		'Aircraft RD Sequence Number',
-			promptExpectedType: 'number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'rdIssueNum',
 			promptQuestion:		'Enter the RD Issue Number:',
 			promptTitle:		'Aircraft RD Issue Number',
-			promptExpectedType: 'number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 	];
@@ -187,7 +187,7 @@ function getSection1LastPage(){
 			promptLabel:		'sectionLastPage',
 			promptQuestion:		'Enter the last page number of Section 1:',
 			promptTitle:		'Section 1 - Last Page',
-			promptExpectedType: 'number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 	];
@@ -293,14 +293,14 @@ function createDraftEmail(filename){
 			promptLabel:		'ADRNum',
 			promptQuestion:		'Enter the ADR Number',
 			promptTitle:		'ADR Number',
-			promptExpectedType: 'number',
+			promptExpectedType:	'number',
 			promptDefaultValue:	''
 		},
 		{
 			promptLabel:		'ADRUrgency',
 			promptQuestion:		'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
 			promptTitle:		'Urgency',
-			promptExpectedType: 'string',
+			promptExpectedType:	'string',
 			promptDefaultValue:	''
 		},
 	];
