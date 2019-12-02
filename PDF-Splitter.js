@@ -109,6 +109,7 @@ function getFilenameFromUserPrompts() {
 			promptQuestion:		'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84',
 			promptTitle:		'Aircraft Series Number',
 			promptExpectedType:	'number',
+			promptRequired:		true,
 			promptDefaultValue:	''
 		},
 		{
@@ -116,6 +117,7 @@ function getFilenameFromUserPrompts() {
 			promptQuestion:		'Enter the ATA Chapter:',
 			promptTitle:		'Aircraft ATA Chapter',
 			promptExpectedType:	'number',
+			promptRequired:		true,
 			promptDefaultValue:	''
 		},
 		{
@@ -123,6 +125,7 @@ function getFilenameFromUserPrompts() {
 			promptQuestion:		'Enter the RD Sequence Number:',
 			promptTitle:		'Aircraft RD Sequence Number',
 			promptExpectedType:	'number',
+			promptRequired: 	true,
 			promptDefaultValue:	''
 		},
 		{
@@ -130,6 +133,7 @@ function getFilenameFromUserPrompts() {
 			promptQuestion:		'Enter the RD Issue Number:',
 			promptTitle:		'Aircraft RD Issue Number',
 			promptExpectedType:	'number',
+			promptRequired: 	true,
 			promptDefaultValue:	''
 		},
 	];
@@ -225,6 +229,7 @@ function getSection1LastPage(){
 			promptQuestion:		'Enter the last page number of Section 1:',
 			promptTitle:		'Section 1 - Last Page',
 			promptExpectedType:	'number',
+			promptRequired: 	true,
 			promptDefaultValue:	''
 		},
 	];
@@ -336,6 +341,7 @@ function createDraftEmail(filename){
 			promptQuestion:		'Enter the ADR Number',
 			promptTitle:		'ADR Number',
 			promptExpectedType:	'string',
+			promptRequired:		false,
 			promptDefaultValue:	''
 		},
 		{
@@ -343,6 +349,7 @@ function createDraftEmail(filename){
 			promptQuestion:		'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
 			promptTitle:		'Urgency',
 			promptExpectedType:	'string',
+			promptRequired:		false,
 			promptDefaultValue:	''
 		},
 	];
@@ -386,7 +393,7 @@ function askUserPrompts(prompts){
 			var promptResponse = app.response(prompts[i].promptQuestion, prompts[i].promptTitle, prompts[i].promptDefaultValue);
 
 			// Error checking
-			if (!promptResponse.length) {
+			if (prompts[i].promptRequired && !promptResponse.length) {
 				throw 'No answer entered for question:' + prompts[i].promptQuestion;
 			}
 
