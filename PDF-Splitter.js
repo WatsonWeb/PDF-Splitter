@@ -281,7 +281,7 @@ function getOutputs(filename, paths, bill, sectionLastPage){
 	var OUTPUTS = [
 		{
 			start:	0,
-			end:	this.numPages,
+			end:	this.numPages - 1,
 			path:	paths.rootPath + filename,
 			suffix:	'sect1,2,bill'
 		},
