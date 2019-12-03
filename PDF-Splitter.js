@@ -1,5 +1,6 @@
 /*
 * Main RD Extract and Email Function
+* Version: 2.1.0 - December 2019
 * Returns: boolean (true or false)
 */
 function rdExtractAndEmail(){
