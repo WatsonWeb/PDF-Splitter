@@ -92,7 +92,7 @@ function getFilenameFromSourceFile(){
 	}
 
 	// Example filename: rd84-53-5264iss1.pdf
-	var filenameArray		= documentFileName.split('-');
+	var filenameArray		= documentFileName.replace('.pdf', '').split('-');
 	var seriesNum			= filenameArray[0].substring(2);	// Numbers after 'rd'
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
 	var rdSequenceNumArray	= filenameArray[2].split('iss');
@@ -339,7 +339,7 @@ function trimPDFforEmail(sectionLastPage){
 		return false;
 	}
 
-	this.deletepages({nStart: sectionLastPage + 1, nEnd:this.numPages});
+	this.deletePages({nStart: sectionLastPage, nEnd:this.numPages - 1});
 
 	return true;
 }
