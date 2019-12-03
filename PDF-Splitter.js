@@ -96,7 +96,7 @@ function getFilenameFromSourceFile(){
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
 	var rdSequenceNumArray	= filenameArray[2].split('iss');
 	var rdSequenceNum		= rdSequenceNumArray[0];			// Numbers before 'iss'
-	var rdIssueNum			= rdSequenceNumArray[1];				// Numbers after 'iss'
+	var rdIssueNum			= rdSequenceNumArray[1];			// Numbers after 'iss'
 
 	return 'rd' + seriesNum + '-' + ataChapterNum + '-' + rdSequenceNum + 'iss' + rdIssueNum;
 }
