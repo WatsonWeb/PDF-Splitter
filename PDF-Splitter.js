@@ -63,7 +63,7 @@ function rdExtractAndEmail(){
 */
 function promptForFormatOrigin() {
 	var FORMAT_ORIGIN = app.alert(
-		'Has this document been saved using a \'rdX-XX-XXXissXSect1,2,bill\' format?\nYes - The script will pull RD information from the file name.\nNo - The script will prompt for RD information.',
+		'Has this document been saved using a \'rdX-XX-XXXissX\' format?\nYes - The script will pull RD information from the file name.\nNo - The script will prompt for RD information.',
 		2,
 		3,
 		'RD info from filename or prompts?'
@@ -90,7 +90,7 @@ function getFilenameFromSourceFile(){
 		return false;
 	}
 
-	// Example filename: rd84-53-5264iss31Sect1,2,bill.pdf
+	// Example filename: rd84-53-5264iss1.pdf
 	var filenameArray		= documentFileName.split('-');
 	var seriesNum			= filenameArray[0].substring(2);	// Numbers after 'rd'
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
