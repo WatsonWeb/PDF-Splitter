@@ -46,7 +46,11 @@ function rdExtractAndEmail(){
 	var EXTRACTED_PDFS = extractPDFs(OUTPUTS);
 	if (!EXTRACTED_PDFS) { return false; }
 
-	// 8. Draft an e-mail
+	// 8. TRIM exsiting PDF to attach to email
+	var TRIMMED_PDF = trimPDFforEmail(SECTION_LASTPAGE);
+	if (!TRIMMED_PDF) { return false; }
+
+	// 9. Draft an e-mail
 	var DRAFT_EMAIL = createDraftEmail(FILENAME + '.pdf');
 	if (!DRAFT_EMAIL) { return false; }
 
@@ -277,6 +281,12 @@ function getOutputs(filename, paths, bill, sectionLastPage){
 	var OUTPUTS = [
 		{
 			start:	0,
+			end:	this.numPages,
+			path:	paths.rootPath + filename,
+			suffix:	'sect1,2,bill'
+		},
+		{
+			start:	0,
 			end:	sectionLastPage - 1,
 			path:	paths.rootPath + filename,
 			suffix:	''
@@ -323,7 +333,26 @@ function extractPDFs(outputs){
 }
 
 /*
-* 8. Create Draft E-mail
+* 8. Trims exsiting PDF to attach to email
+* Params: sectionLastPage(integer)
+* Returns: boolean (true or false)
+*/
+function trimPDFforEmail(sectionLastPage){
+
+	// Error checking
+	if (!sectionLastPage || isNaN(sectionLastPage)) {
+		console.println('Error: No sectionLastPage integer passed to getOutputs');
+		return false;
+	}
+
+	this.deletepages({nStart: sectionLastPage + 1, nEnd:this.numPages});
+
+	return true;
+}
+
+
+/*
+* 9. Create Draft E-mail
 * Params: filename(string)
 * Returns: boolean (true or false)
 */
@@ -362,12 +391,26 @@ function createDraftEmail(filename){
 		return false;
 	}
 
-	app.mailMsg({
+	var subject = '';
+	var message = 'THD,\n\nPlease forward attached ' + filename;
+
+	if (EMAIL_RESPONSES.ADRUrgency) {
+		subject += EMAIL_RESPONSES.ADRUrgency + ' ';
+	}
+
+	if (EMAIL_RESPONSES.ADRNum) {
+		subject += EMAIL_RESPONSES.ADRNum;
+		message += ' to operator via ADR: ' + EMAIL_RESPONSES.ADRNum;
+	}
+
+	message += '\n\nThanks and Regards';
+
+	this.mailDoc({
 		bUI: true,
 		cTo: 'thd@dehavilland.com',
 		cCC: '',
-		cSubject: EMAIL_RESPONSES.ADRUrgency + ' ' + EMAIL_RESPONSES.ADRNum,
-		cMsg: 'THD,\n\nPlease forward attached ' + filename + ' to operator via ADR: ' + EMAIL_RESPONSES.ADRNum + '\n\nThanks and Regards'
+		cSubject: subject,
+		cMsg: message
 	});
 
 	return true;
