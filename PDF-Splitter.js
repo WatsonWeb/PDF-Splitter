@@ -4,6 +4,13 @@
 * Returns: boolean (true or false)
 */
 function rdExtractAndEmail(){
+	// Declare global active doc object
+	var ACTIVE_DOC = this;
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found');
+		return false;
+	}
+
 	// 1. Get formatting origin
 	var FORMAT_ORIGIN = promptForFormatOrigin();
 	if (!FORMAT_ORIGIN) { return false; }
@@ -13,7 +20,7 @@ function rdExtractAndEmail(){
 	switch (FORMAT_ORIGIN) {
 	
 	case 4: // Yes (from filename)
-		FILENAME = getFilenameFromSourceFile();
+		FILENAME = getFilenameFromSourceFile(ACTIVE_DOC);
 		if (!FILENAME) { return false; }
 		break;
 	
@@ -28,7 +35,7 @@ function rdExtractAndEmail(){
 	}
 
 	// 3. Get Paths
-	var PATHS = getPaths(FILENAME);
+	var PATHS = getPaths(FILENAME, ACTIVE_DOC);
 	if (!PATHS) { return false; }
 
 	// 4. Get Bill Status
@@ -40,19 +47,19 @@ function rdExtractAndEmail(){
 	if (!SECTION_LASTPAGE) { return false; }
 
 	// 6. Get Outputs
-	var OUTPUTS = getOutputs(FILENAME, PATHS, BILL, SECTION_LASTPAGE);
+	var OUTPUTS = getOutputs(FILENAME, PATHS, BILL, SECTION_LASTPAGE, ACTIVE_DOC);
 	if (!OUTPUTS) { return false; }
 
 	// 7. Extract PDFS
-	var EXTRACTED_PDFS = extractPDFs(OUTPUTS);
+	var EXTRACTED_PDFS = extractPDFs(OUTPUTS, ACTIVE_DOC);
 	if (!EXTRACTED_PDFS) { return false; }
 
 	// 8. TRIM exsiting PDF to attach to email
-	var TRIMMED_PDF = trimPDFforEmail(SECTION_LASTPAGE);
+	var TRIMMED_PDF = trimPDFforEmail(SECTION_LASTPAGE, ACTIVE_DOC);
 	if (!TRIMMED_PDF) { return false; }
 
 	// 9. Draft an e-mail
-	var DRAFT_EMAIL = createDraftEmail(FILENAME + '.pdf');
+	var DRAFT_EMAIL = createDraftEmail(FILENAME + '.pdf', ACTIVE_DOC);
 	if (!DRAFT_EMAIL) { return false; }
 
 	return true;
@@ -82,17 +89,18 @@ function promptForFormatOrigin() {
 /*
 * 2a. Get filename from source file
 * Returns: string
+* Params: ACTIVE_DOC (doc object)
 */
-function getFilenameFromSourceFile(){
+function getFilenameFromSourceFile(ACTIVE_DOC){
 
 	// Error checking
-	if (!documentFileName) {
+	if (!ACTIVE_DOC.documentFileName) {
 		console.println('Error: No documentFileName in getFilenameFromSourceFile');
 		return false;
 	}
 
 	// Example filename: rd84-53-5264iss1.pdf
-	var filenameArray		= documentFileName.replace('.pdf', '').split('-');
+	var filenameArray		= ACTIVE_DOC.documentFileName.replace('.pdf', '').split('-');
 	var seriesNum			= filenameArray[0].substring(2);	// Numbers after 'rd'
 	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
 	var rdSequenceNumArray	= filenameArray[2].split('iss');
@@ -155,10 +163,10 @@ function getFilenameFromUserPrompts() {
 
 /*
 * 3. Get paths object based on filename
-* Params: filename(string)
+* Params: filename(string), ACTIVE_DOC(doc object)
 * Returns: object
 */
-function getPaths(filename){
+function getPaths(filename, ACTIVE_DOC){
 
 	// Error checking
 	if (!filename) {
@@ -166,11 +174,16 @@ function getPaths(filename){
 		return false;
 	}
 
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in getPaths');
+		return false;
+	}
+
 	var PATHS = {
 		defaultPath:	'/torfps01.dehavilland.ca/techserv/structur/Documents/RDs(scanned)/',
 		series8Folder:	'Q100-200-300',
 		series84Folder:	'Q400',
-		rootPath:		this.path.replace(this.documentFileName, '')
+		rootPath:		ACTIVE_DOC.path.replace(ACTIVE_DOC.documentFileName, '')
 	};
 
 	// Example filename: rd84-53-5264iss31
@@ -251,10 +264,10 @@ function getSection1LastPage(){
 
 /*
 * 6. Get outputs
-* Params: filename(string), paths(object), bill(integer), sectionLastPage(integer)
+* Params: filename(string), paths(object), bill(integer), sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: array
 */
-function getOutputs(filename, paths, bill, sectionLastPage){
+function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC){
 	
 	// Error checking
 	if (!filename) {
@@ -277,11 +290,16 @@ function getOutputs(filename, paths, bill, sectionLastPage){
 		return false;
 	}
 
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in getOutputs');
+		return false;
+	}
+
 	// Set Outputs
 	var OUTPUTS = [
 		{
 			start:	0,
-			end:	this.numPages - 1,
+			end:	ACTIVE_DOC.numPages - 1,
 			path:	paths.rootPath + filename,
 			suffix:	'sect1,2,bill'
 		},
@@ -293,7 +311,7 @@ function getOutputs(filename, paths, bill, sectionLastPage){
 		},
 		{
 			start:	sectionLastPage,
-			end:	this.numPages - 1,
+			end:	ACTIVE_DOC.numPages - 1,
 			path:	paths.outputPath + filename,
 			suffix:	'sect2'
 		},
@@ -304,10 +322,10 @@ function getOutputs(filename, paths, bill, sectionLastPage){
 
 /*
 * 7. Extract PDFs
-* Params: outputs(array)
+* Params: outputs(array), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function extractPDFs(outputs){
+function extractPDFs(outputs, ACTIVE_DOC){
 
 	// Error checking
 	if (typeof outputs != 'object' || !outputs.length) {
@@ -315,9 +333,14 @@ function extractPDFs(outputs){
 		return false;
 	}
 
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in extractPDFs');
+		return false;
+	}
+
 	for (var j = 0; j < outputs.length; j++) {
 		try {
-			this.extractPages({ nStart: outputs[j].start, nEnd: outputs[j].end, cPath: outputs[j].path + outputs[j].suffix + '.pdf' });
+			ACTIVE_DOC.extractPages({ nStart: outputs[j].start, nEnd: outputs[j].end, cPath: outputs[j].path + outputs[j].suffix + '.pdf' });
 		} catch (e) {
 			console.println(e);
 		}
@@ -328,10 +351,10 @@ function extractPDFs(outputs){
 
 /*
 * 8. Trims exsiting PDF to attach to email
-* Params: sectionLastPage(integer)
+* Params: sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function trimPDFforEmail(sectionLastPage){
+function trimPDFforEmail(sectionLastPage, ACTIVE_DOC){
 
 	// Error checking
 	if (!sectionLastPage || isNaN(sectionLastPage)) {
@@ -339,7 +362,12 @@ function trimPDFforEmail(sectionLastPage){
 		return false;
 	}
 
-	this.deletePages({nStart: sectionLastPage, nEnd:this.numPages - 1});
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in trimPDFforEmail');
+		return false;
+	}
+
+	ACTIVE_DOC.deletePages({ nStart: sectionLastPage, nEnd: ACTIVE_DOC.numPages - 1});
 
 	return true;
 }
@@ -347,14 +375,19 @@ function trimPDFforEmail(sectionLastPage){
 
 /*
 * 9. Create Draft E-mail
-* Params: filename(string)
+* Params: filename(string), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function createDraftEmail(filename){
+function createDraftEmail(filename, ACTIVE_DOC){
 
 	// Error checking
 	if (!filename) {
 		console.println('Error: No filename string passed to createDraftEmail');
+		return false;
+	}
+
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in createDraftEmail');
 		return false;
 	}
 
@@ -399,7 +432,7 @@ function createDraftEmail(filename){
 
 	message += '\n\nThanks and Regards';
 
-	this.mailDoc({
+	ACTIVE_DOC.mailDoc({
 		bUI: true,
 		cTo: 'thd@dehavilland.com',
 		cCC: '',
