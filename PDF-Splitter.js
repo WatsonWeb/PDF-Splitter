@@ -1,9 +1,9 @@
 /*
 * Main RD Extract and Email Function
-* Version: 2.2.1 - December 2019
+* Version: 2.2.3 - December 2019
 * Returns: boolean (true or false)
 */
-function rdExtractAndEmail(){
+function rdExtractAndEmail() {
 	// Declare global active doc object
 	var ACTIVE_DOC = this;
 	if (!ACTIVE_DOC.documentFileName) {
@@ -18,17 +18,17 @@ function rdExtractAndEmail(){
 	// 2. Get filename based on type of formatting
 	var FILENAME = '';
 	switch (FORMAT_ORIGIN) {
-	
+
 	case 4: // Yes (from filename)
 		FILENAME = getFilenameFromSourceFile(ACTIVE_DOC);
 		if (!FILENAME) { return false; }
 		break;
-	
+
 	case 3: // No (from user input)
 		FILENAME = getFilenameFromUserPrompts();
 		if (!FILENAME) { return false; }
 		break;
-	
+
 	default: // Default (Cancel or exited)
 		console.println('Error: No formatting origin selected');
 		return false;
@@ -59,7 +59,7 @@ function rdExtractAndEmail(){
 	if (!TRIMMED_PDF) { return false; }
 
 	// 9. Draft an e-mail
-	var DRAFT_EMAIL = createDraftEmail(FILENAME , ACTIVE_DOC);
+	var DRAFT_EMAIL = createDraftEmail(FILENAME, ACTIVE_DOC);
 	if (!DRAFT_EMAIL) { return false; }
 
 	return true;
@@ -91,7 +91,7 @@ function promptForFormatOrigin() {
 * Returns: string
 * Params: ACTIVE_DOC (doc object)
 */
-function getFilenameFromSourceFile(ACTIVE_DOC){
+function getFilenameFromSourceFile(ACTIVE_DOC) {
 
 	// Error checking
 	if (!ACTIVE_DOC.documentFileName) {
@@ -100,12 +100,12 @@ function getFilenameFromSourceFile(ACTIVE_DOC){
 	}
 
 	// Example filename: rd84-53-5264iss1.pdf
-	var filenameArray		= ACTIVE_DOC.documentFileName.replace('.pdf', '').split('-');
-	var seriesNum			= filenameArray[0].substring(2);	// Numbers after 'rd'
-	var ataChapterNum		= filenameArray[1];					// Numbers between '-'
-	var rdSequenceNumArray	= filenameArray[2].split('iss');
-	var rdSequenceNum		= rdSequenceNumArray[0];			// Numbers before 'iss'
-	var rdIssueNum			= rdSequenceNumArray[1];			// Numbers after 'iss'
+	var filenameArray = ACTIVE_DOC.documentFileName.replace('.pdf', '').split('-');
+	var seriesNum = filenameArray[0].substring(2);	// Numbers after 'rd'
+	var ataChapterNum = filenameArray[1];					// Numbers between '-'
+	var rdSequenceNumArray = filenameArray[2].split('iss');
+	var rdSequenceNum = rdSequenceNumArray[0];			// Numbers before 'iss'
+	var rdIssueNum = rdSequenceNumArray[1];			// Numbers after 'iss'
 
 	return 'rd' + seriesNum + '-' + ataChapterNum + '-' + rdSequenceNum + 'iss' + rdIssueNum;
 }
@@ -117,36 +117,36 @@ function getFilenameFromSourceFile(ACTIVE_DOC){
 function getFilenameFromUserPrompts() {
 	var FILENAME_PROMPTS = [
 		{
-			promptLabel:		'seriesNum',
-			promptQuestion:		'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84',
-			promptTitle:		'Aircraft Series Number',
-			promptExpectedType:	'number',
-			promptRequired:		true,
-			promptDefaultValue:	''
+			promptLabel: 'seriesNum',
+			promptQuestion: 'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84',
+			promptTitle: 'Aircraft Series Number',
+			promptExpectedType: 'number',
+			promptRequired: true,
+			promptDefaultValue: ''
 		},
 		{
-			promptLabel:		'ataChapterNum',
-			promptQuestion:		'Enter the ATA Chapter:',
-			promptTitle:		'Aircraft ATA Chapter',
-			promptExpectedType:	'number',
-			promptRequired:		true,
-			promptDefaultValue:	''
+			promptLabel: 'ataChapterNum',
+			promptQuestion: 'Enter the ATA Chapter:',
+			promptTitle: 'Aircraft ATA Chapter',
+			promptExpectedType: 'number',
+			promptRequired: true,
+			promptDefaultValue: ''
 		},
 		{
-			promptLabel:		'rdSequenceNum',
-			promptQuestion:		'Enter the RD Sequence Number:',
-			promptTitle:		'Aircraft RD Sequence Number',
-			promptExpectedType:	'number',
-			promptRequired: 	true,
-			promptDefaultValue:	''
+			promptLabel: 'rdSequenceNum',
+			promptQuestion: 'Enter the RD Sequence Number:',
+			promptTitle: 'Aircraft RD Sequence Number',
+			promptExpectedType: 'number',
+			promptRequired: true,
+			promptDefaultValue: ''
 		},
 		{
-			promptLabel:		'rdIssueNum',
-			promptQuestion:		'Enter the RD Issue Number:',
-			promptTitle:		'Aircraft RD Issue Number',
-			promptExpectedType:	'number',
-			promptRequired: 	true,
-			promptDefaultValue:	''
+			promptLabel: 'rdIssueNum',
+			promptQuestion: 'Enter the RD Issue Number:',
+			promptTitle: 'Aircraft RD Issue Number',
+			promptExpectedType: 'number',
+			promptRequired: true,
+			promptDefaultValue: ''
 		},
 	];
 
@@ -166,7 +166,7 @@ function getFilenameFromUserPrompts() {
 * Params: filename(string), ACTIVE_DOC(doc object)
 * Returns: object
 */
-function getPaths(filename, ACTIVE_DOC){
+function getPaths(filename, ACTIVE_DOC) {
 
 	// Error checking
 	if (!filename) {
@@ -180,16 +180,16 @@ function getPaths(filename, ACTIVE_DOC){
 	}
 
 	var PATHS = {
-		defaultPath:	'/torfps01.dehavilland.ca/techserv/structur/Documents/RDs(scanned)/',
-		series8Folder:	'Q100-200-300',
-		series84Folder:	'Q400',
-		rootPath:		ACTIVE_DOC.path.replace(ACTIVE_DOC.documentFileName, '')
+		defaultPath: '/torfps01.dehavilland.ca/techserv/structur/Documents/RDs(scanned)/',
+		series8Folder: 'Q100-200-300',
+		series84Folder: 'Q400',
+		rootPath: ACTIVE_DOC.path.replace(ACTIVE_DOC.documentFileName, '')
 	};
 
 	// Example filename: rd84-53-5264iss31
-	var filenameArray	= filename.split('-');
-	var seriesNum		= filenameArray[0].substring(2);	// Numbers after 'rd'
-	var ataChapterNum	= filenameArray[1];					// Numbers between '-'
+	var filenameArray = filename.split('-');
+	var seriesNum = filenameArray[0].substring(2);	// Numbers after 'rd'
+	var ataChapterNum = filenameArray[1];					// Numbers between '-'
 
 	if (seriesNum === '8') {
 		PATHS.seriesFolder = PATHS.series8Folder;
@@ -209,7 +209,7 @@ function getPaths(filename, ACTIVE_DOC){
 * 4. Find out if the first page is a bill
 * Returns: integer (0 or 1)
 */
-function getBillStatus(){
+function getBillStatus() {
 	var BILL_STATUS = app.alert(
 		'Is the first page of this PDF a bill?',
 		2,
@@ -224,7 +224,7 @@ function getBillStatus(){
 	}
 
 	switch (BILL_STATUS) {
-	
+
 	case 4: // Yes
 		return 1;
 	case 3: // No
@@ -239,15 +239,15 @@ function getBillStatus(){
 * 5. Get the number of the last page of section 1
 * Returns: integer
 */
-function getSection1LastPage(){
+function getSection1LastPage() {
 	var SECTION_PROMPTS = [
 		{
-			promptLabel:		'sectionLastPage',
-			promptQuestion:		'Enter the last page number of Section 1:',
-			promptTitle:		'Section 1 - Last Page',
-			promptExpectedType:	'number',
-			promptRequired: 	true,
-			promptDefaultValue:	''
+			promptLabel: 'sectionLastPage',
+			promptQuestion: 'Enter the last page number of Section 1:',
+			promptTitle: 'Section 1 - Last Page',
+			promptExpectedType: 'number',
+			promptRequired: true,
+			promptDefaultValue: ''
 		},
 	];
 
@@ -267,8 +267,8 @@ function getSection1LastPage(){
 * Params: filename(string), paths(object), bill(integer), sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: array
 */
-function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC){
-	
+function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC) {
+
 	// Error checking
 	if (!filename) {
 		console.println('Error: No filename string passed to getOutputs');
@@ -295,25 +295,32 @@ function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC){
 		return false;
 	}
 
+	// Set suffix
+	var filenameSuffix = 'sect1,2';
+
+	if (bill) {
+		filenameSuffix += ',bill';
+	}
+
 	// Set Outputs
 	var OUTPUTS = [
 		{
-			start:	0,
-			end:	ACTIVE_DOC.numPages - 1,
-			path:	paths.rootPath + filename,
-			suffix:	'sect1,2,bill'
+			start: 0,
+			end: ACTIVE_DOC.numPages - 1,
+			path: paths.rootPath + filename,
+			suffix: filenameSuffix,
 		},
 		{
-			start:	bill,
-			end:	sectionLastPage - 1,
-			path:	paths.outputPath + filename,
-			suffix:	'sect1'
+			start: bill,
+			end: sectionLastPage - 1,
+			path: paths.outputPath + filename,
+			suffix: 'sect1'
 		},
 		{
-			start:	sectionLastPage,
-			end:	ACTIVE_DOC.numPages - 1,
-			path:	paths.outputPath + filename,
-			suffix:	'sect2'
+			start: sectionLastPage,
+			end: ACTIVE_DOC.numPages - 1,
+			path: paths.outputPath + filename,
+			suffix: 'sect2'
 		},
 	];
 
@@ -325,7 +332,7 @@ function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC){
 * Params: outputs(array), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function extractPDFs(outputs, ACTIVE_DOC){
+function extractPDFs(outputs, ACTIVE_DOC) {
 
 	// Error checking
 	if (typeof outputs != 'object' || !outputs.length) {
@@ -354,7 +361,7 @@ function extractPDFs(outputs, ACTIVE_DOC){
 * Params: sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function trimPDFforEmail(sectionLastPage, ACTIVE_DOC){
+function trimPDFforEmail(sectionLastPage, ACTIVE_DOC) {
 
 	// Error checking
 	if (!sectionLastPage || isNaN(sectionLastPage)) {
@@ -367,7 +374,7 @@ function trimPDFforEmail(sectionLastPage, ACTIVE_DOC){
 		return false;
 	}
 
-	ACTIVE_DOC.deletePages({ nStart: sectionLastPage, nEnd: ACTIVE_DOC.numPages - 1});
+	ACTIVE_DOC.deletePages({ nStart: sectionLastPage, nEnd: ACTIVE_DOC.numPages - 1 });
 
 	return true;
 }
@@ -378,7 +385,7 @@ function trimPDFforEmail(sectionLastPage, ACTIVE_DOC){
 * Params: filename(string), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
-function createDraftEmail(filename, ACTIVE_DOC){
+function createDraftEmail(filename, ACTIVE_DOC) {
 
 	// Error checking
 	if (!filename) {
@@ -393,20 +400,20 @@ function createDraftEmail(filename, ACTIVE_DOC){
 
 	var EMAIL_PROMPTS = [
 		{
-			promptLabel:		'ADRNum',
-			promptQuestion:		'Enter the ADR Number',
-			promptTitle:		'ADR Number',
-			promptExpectedType:	'string',
-			promptRequired:		false,
-			promptDefaultValue:	''
+			promptLabel: 'ADRNum',
+			promptQuestion: 'Enter the ADR Number',
+			promptTitle: 'ADR Number',
+			promptExpectedType: 'string',
+			promptRequired: false,
+			promptDefaultValue: ''
 		},
 		{
-			promptLabel:		'ADRUrgency',
-			promptQuestion:		'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
-			promptTitle:		'Urgency',
-			promptExpectedType:	'string',
-			promptRequired:		false,
-			promptDefaultValue:	''
+			promptLabel: 'ADRUrgency',
+			promptQuestion: 'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
+			promptTitle: 'Urgency',
+			promptExpectedType: 'string',
+			promptRequired: false,
+			promptDefaultValue: ''
 		},
 	];
 
@@ -448,7 +455,7 @@ function createDraftEmail(filename, ACTIVE_DOC){
 * Params: prompts(array)
 * Returns: object
 */
-function askUserPrompts(prompts){
+function askUserPrompts(prompts) {
 
 	// Error checking
 	if (!prompts.length) {
@@ -477,7 +484,7 @@ function askUserPrompts(prompts){
 			return false;
 		}
 	}
-	
+
 	return RESPONSES;
 }
 
@@ -485,10 +492,10 @@ function askUserPrompts(prompts){
 * Add button to toolbar
 */
 app.addToolButton({
-	cName:		'RD Extract and Save',
-	cLabel:		'RD Extract and Save',
-	cExec:		'rdExtractAndEmail()',
-	cTooltext:	'Extract and Save Sect 1 & 2, Send RD to THD',
-	cEnable:	true,
-	nPos:		-1
+	cName: 'RD Extract-Save-Email',
+	cLabel: 'RD Extract-Save-Email',
+	cExec: 'rdExtractAndEmail()',
+	cTooltext: 'Extract and Save Sect 1 & 2, Send RD to THD',
+	cEnable: true,
+	nPos: -1
 }); 
