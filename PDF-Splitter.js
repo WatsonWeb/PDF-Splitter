@@ -58,7 +58,11 @@ function rdExtractAndEmail() {
 	var TRIMMED_PDF = trimPDFforEmail(SECTION_LASTPAGE, ACTIVE_DOC);
 	if (!TRIMMED_PDF) { return false; }
 
-	// 9. Draft an e-mail
+	// 9. Save trimmed PDF
+	var RENAMED_PDF = saveTrimmedPDF(PATHS, ACTIVE_DOC);
+	if (!RENAMED_PDF) { return false; }
+
+	// 10. Draft an e-mail
 	var DRAFT_EMAIL = createDraftEmail(FILENAME, ACTIVE_DOC);
 	if (!DRAFT_EMAIL) { return false; }
 
@@ -379,9 +383,33 @@ function trimPDFforEmail(sectionLastPage, ACTIVE_DOC) {
 	return true;
 }
 
+/*
+* 9. Saves trimmed PDF with new filename before attaching to email
+* Params: outputs(array), ACTIVE_DOC(doc object)
+* Returns: boolean (true or false)
+*/
+function saveTrimmedPDF(outputs, ACTIVE_DOC) {
+
+	// Error checking
+	if (typeof outputs != 'object' || !outputs.length) {
+		console.println('Error: No outputs array passed to saveTrimmedPDF');
+		return false;
+	}
+
+	if (!ACTIVE_DOC.documentFileName) {
+		console.println('Error: Document object not found in saveTrimmedPDF');
+		return false;
+	}
+	
+	ACTIVE_DOC.saveAs({
+		cPath: outputs[0].path + '.pdf'
+	});
+
+	return true;
+}
 
 /*
-* 9. Create Draft E-mail
+* 10. Create Draft E-mail
 * Params: filename(string), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
