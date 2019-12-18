@@ -59,7 +59,7 @@ function rdExtractAndEmail() {
 	if (!TRIMMED_PDF) { return false; }
 
 	// 9. Save trimmed PDF
-	var RENAMED_PDF = saveTrimmedPDF(PATHS, ACTIVE_DOC);
+	var RENAMED_PDF = saveTrimmedPDF(OUTPUTS, ACTIVE_DOC);
 	if (!RENAMED_PDF) { return false; }
 
 	// 10. Draft an e-mail
