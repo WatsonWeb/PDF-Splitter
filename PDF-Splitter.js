@@ -1,6 +1,6 @@
 /*
 * Main RD Extract and Email Function
-* Version: 2.3.1 - December 2019
+* Version: 2.3.3 - December 2019
 * Returns: boolean (true or false)
 */
 function rdExtractAndEmail() {
@@ -247,7 +247,7 @@ function getSection1LastPage() {
 	var SECTION_PROMPTS = [
 		{
 			promptLabel: 'sectionLastPage',
-			promptQuestion: 'Enter the last page number of Section 1:',
+			promptQuestion: 'Enter the last page number of Section 1: \n(Include bill in page count, if applicable)',
 			promptTitle: 'Section 1 - Last Page',
 			promptExpectedType: 'number',
 			promptRequired: true,
