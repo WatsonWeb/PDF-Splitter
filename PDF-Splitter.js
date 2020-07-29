@@ -1,6 +1,6 @@
 /*
 * Main RD Extract and Email Function
-* Version: 2.3.3 - December 2019
+* Version: 2.3.4 - July 2020
 * Returns: boolean (true or false)
 */
 function rdExtractAndEmail() {
@@ -63,8 +63,8 @@ function rdExtractAndEmail() {
 	if (!RENAMED_PDF) { return false; }
 
 	// 10. Draft an e-mail
-	var DRAFT_EMAIL = createDraftEmail(FILENAME, ACTIVE_DOC);
-	if (!DRAFT_EMAIL) { return false; }
+	// var DRAFT_EMAIL = createDraftEmail(FILENAME, ACTIVE_DOC);
+	// if (!DRAFT_EMAIL) { return false; }
 
 	return true;
 }
