@@ -1,10 +1,10 @@
 /*
-* Main RD Extract and Email Function
-* Version: 2.3.4 - July 2020
+* Main RD Extraction Function
+* Version: 2.4.0 - July 2024
 * Returns: boolean (true or false)
 */
 function rdExtractAndEmail() {
-	// Declare global active doc object
+	// Declare global active doc object 
 	var ACTIVE_DOC = this;
 	if (!ACTIVE_DOC.documentFileName) {
 		console.println('Error: Document object not found');
@@ -19,52 +19,44 @@ function rdExtractAndEmail() {
 	var FILENAME = '';
 	switch (FORMAT_ORIGIN) {
 
-	case 4: // Yes (from filename)
-		FILENAME = getFilenameFromSourceFile(ACTIVE_DOC);
-		if (!FILENAME) { return false; }
-		break;
+		case 4: // Yes (from filename)
+			FILENAME = getFilenameFromSourceFile(ACTIVE_DOC);
+			if (!FILENAME) { return false; }
+			break;
 
-	case 3: // No (from user input)
-		FILENAME = getFilenameFromUserPrompts();
-		if (!FILENAME) { return false; }
-		break;
+		case 3: // No (from user input)
+			FILENAME = getFilenameFromUserPrompts();
+			if (!FILENAME) { return false; }
+			break;
 
-	default: // Default (Cancel or exited)
-		console.println('Error: No formatting origin selected');
-		return false;
+		default: // Default (Cancel or exited)
+			console.println('Error: No formatting origin selected');
+			return false;
 	}
 
 	// 3. Get Paths
 	var PATHS = getPaths(FILENAME, ACTIVE_DOC);
 	if (!PATHS) { return false; }
 
-	// 4. Get Bill Status
-	var BILL = getBillStatus();
-	if (BILL === false) { return false; }
-
-	// 5. Get Section 1 Last Page
+	// 4. Get Section 1 Last Page
 	var SECTION_LASTPAGE = getSection1LastPage();
 	if (!SECTION_LASTPAGE) { return false; }
 
-	// 6. Get Outputs
+	// 5. Get Outputs
 	var OUTPUTS = getOutputs(FILENAME, PATHS, BILL, SECTION_LASTPAGE, ACTIVE_DOC);
 	if (!OUTPUTS) { return false; }
 
-	// 7. Extract PDFS
+	// 6. Extract PDFS
 	var EXTRACTED_PDFS = extractPDFs(OUTPUTS, ACTIVE_DOC);
 	if (!EXTRACTED_PDFS) { return false; }
 
-	// 8. TRIM exsiting PDF to attach to email
+	// 7. TRIM exsiting PDF to attach to email
 	var TRIMMED_PDF = trimPDFforEmail(SECTION_LASTPAGE, ACTIVE_DOC);
 	if (!TRIMMED_PDF) { return false; }
 
-	// 9. Save trimmed PDF
+	// 8. Save trimmed PDF
 	var RENAMED_PDF = saveTrimmedPDF(OUTPUTS, ACTIVE_DOC);
 	if (!RENAMED_PDF) { return false; }
-
-	// 10. Draft an e-mail
-	// var DRAFT_EMAIL = createDraftEmail(FILENAME, ACTIVE_DOC);
-	// if (!DRAFT_EMAIL) { return false; }
 
 	return true;
 }
@@ -122,7 +114,7 @@ function getFilenameFromUserPrompts() {
 	var FILENAME_PROMPTS = [
 		{
 			promptLabel: 'seriesNum',
-			promptQuestion: 'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84',
+			promptQuestion: 'Enter the aircraft Series Number:\nS100-S200-S300 = 8\nS400 = 84\nDash 2 = 2\nDash 3 = 3\nDash 4 = 4\nDash 5 = 5\nDash 6 = 6\nDash 7 = 7\nCL215/215T/415= 215\nShorts = 9',
 			promptTitle: 'Aircraft Series Number',
 			promptExpectedType: 'number',
 			promptRequired: true,
@@ -184,24 +176,59 @@ function getPaths(filename, ACTIVE_DOC) {
 	}
 
 	var PATHS = {
-		defaultPath: '/torfps01.dehavilland.ca/techserv/structur/Documents/RDs(scanned)/',
+		defaultPath: '/dhcfps030/data_TechnicalServices_techserv/structur/Documents/RDs(scanned)/',
+		seriesFolder: '',
+		series2Folder: '2',
+		series3Folder: '3',
+		series4Folder: '4',
+		series5Folder: '5',
+		series6Folder: '6',
+		series7Folder: '7',
 		series8Folder: 'Q100-200-300',
 		series84Folder: 'Q400',
-		rootPath: ACTIVE_DOC.path.replace(ACTIVE_DOC.documentFileName, '')
+		series215Folder: '215',
+		series9Folder: 'Shorts',
+		rootPath: ACTIVE_DOC.path.replace(ACTIVE_DOC.documentFileName, ''),
 	};
 
-	// Example filename: rd84-53-5264iss31
 	var filenameArray = filename.split('-');
-	var seriesNum = filenameArray[0].substring(2);	// Numbers after 'rd'
-	var ataChapterNum = filenameArray[1];					// Numbers between '-'
+	var seriesNum = filenameArray[0].substring(2);
+	var ataChapterNum = filenameArray[1];
 
-	if (seriesNum === '8') {
-		PATHS.seriesFolder = PATHS.series8Folder;
-	} else if (seriesNum === '84') {
-		PATHS.seriesFolder = PATHS.series84Folder;
-	} else {
-		console.println('Error: Incorrect series number entered for getPaths');
-		return false;
+	switch (seriesNum) {
+		case '8':
+			PATHS.seriesFolder = PATHS.series8Folder;
+			break;
+		case '84':
+			PATHS.seriesFolder = PATHS.series84Folder;
+			break;
+		case '2':
+			PATHS.seriesFolder = PATHS.series2Folder;
+			break;
+		case '3':
+			PATHS.seriesFolder = PATHS.series3Folder;
+			break;
+		case '4':
+			PATHS.seriesFolder = PATHS.series4Folder;
+			break;
+		case '5':
+			PATHS.seriesFolder = PATHS.series5Folder;
+			break;
+		case '6':
+			PATHS.seriesFolder = PATHS.series6Folder;
+			break;
+		case '7':
+			PATHS.seriesFolder = PATHS.series7Folder;
+			break;
+		case '215':
+			PATHS.seriesFolder = PATHS.series215Folder;
+			break;
+		case '9':
+			PATHS.seriesFolder = PATHS.series9Folder;
+			break;
+		default:
+			console.println('Error: Incorrect series number entered for getPaths');
+			return false;
 	}
 
 	PATHS.outputPath = PATHS.defaultPath + '/' + PATHS.seriesFolder + '/' + ataChapterNum + '/';
@@ -210,44 +237,14 @@ function getPaths(filename, ACTIVE_DOC) {
 }
 
 /*
-* 4. Find out if the first page is a bill
-* Returns: integer (0 or 1)
-*/
-function getBillStatus() {
-	var BILL_STATUS = app.alert(
-		'Is the first page of this PDF a bill?',
-		2,
-		3,
-		'First page a bill?'
-	);
-
-	// Error checking
-	if (isNaN(BILL_STATUS)) {
-		console.println('Error: getBillStatus did not return a number');
-		return false;
-	}
-
-	switch (BILL_STATUS) {
-
-	case 4: // Yes
-		return 1;
-	case 3: // No
-		return 0;
-	default: // Default (Cancel or exited)
-		console.println('Error: No option selected in getBillStatus');
-		return false;
-	}
-}
-
-/*
-* 5. Get the number of the last page of section 1
+* 4. Get the number of the last page of section 1
 * Returns: integer
 */
 function getSection1LastPage() {
 	var SECTION_PROMPTS = [
 		{
 			promptLabel: 'sectionLastPage',
-			promptQuestion: 'Enter the last page number of Section 1: \n(Include bill in page count, if applicable)',
+			promptQuestion: 'Enter the last page number of Section 1:',
 			promptTitle: 'Section 1 - Last Page',
 			promptExpectedType: 'number',
 			promptRequired: true,
@@ -267,7 +264,7 @@ function getSection1LastPage() {
 }
 
 /*
-* 6. Get outputs
+* 5. Get outputs
 * Params: filename(string), paths(object), bill(integer), sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: array
 */
@@ -332,7 +329,7 @@ function getOutputs(filename, paths, bill, sectionLastPage, ACTIVE_DOC) {
 }
 
 /*
-* 7. Extract PDFs
+* 6. Extract PDFs
 * Params: outputs(array), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
@@ -361,7 +358,7 @@ function extractPDFs(outputs, ACTIVE_DOC) {
 }
 
 /*
-* 8. Trims exsiting PDF to attach to email
+* 7. Trims exsiting PDF to attach to email
 * Params: sectionLastPage(integer), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
@@ -384,7 +381,7 @@ function trimPDFforEmail(sectionLastPage, ACTIVE_DOC) {
 }
 
 /*
-* 9. Saves trimmed PDF with new filename before attaching to email
+* 8. Saves trimmed PDF with new filename before attaching to email
 * Params: outputs(array), ACTIVE_DOC(doc object)
 * Returns: boolean (true or false)
 */
@@ -400,79 +397,9 @@ function saveTrimmedPDF(outputs, ACTIVE_DOC) {
 		console.println('Error: Document object not found in saveTrimmedPDF');
 		return false;
 	}
-	
+
 	ACTIVE_DOC.saveAs({
 		cPath: outputs[0].path + '.pdf'
-	});
-
-	return true;
-}
-
-/*
-* 10. Create Draft E-mail
-* Params: filename(string), ACTIVE_DOC(doc object)
-* Returns: boolean (true or false)
-*/
-function createDraftEmail(filename, ACTIVE_DOC) {
-
-	// Error checking
-	if (!filename) {
-		console.println('Error: No filename string passed to createDraftEmail');
-		return false;
-	}
-
-	if (!ACTIVE_DOC.documentFileName) {
-		console.println('Error: Document object not found in createDraftEmail');
-		return false;
-	}
-
-	var EMAIL_PROMPTS = [
-		{
-			promptLabel: 'ADRNum',
-			promptQuestion: 'Enter the ADR Number',
-			promptTitle: 'ADR Number',
-			promptExpectedType: 'string',
-			promptRequired: false,
-			promptDefaultValue: ''
-		},
-		{
-			promptLabel: 'ADRUrgency',
-			promptQuestion: 'Enter the Request Urgency (AOG, ODU, Urgent, Routine)',
-			promptTitle: 'Urgency',
-			promptExpectedType: 'string',
-			promptRequired: false,
-			promptDefaultValue: ''
-		},
-	];
-
-	var EMAIL_RESPONSES = askUserPrompts(EMAIL_PROMPTS);
-
-	// Error checking
-	if (!EMAIL_RESPONSES) {
-		console.println('Error: askUserPrompts(EMAIL_PROMPTS) returned false');
-		return false;
-	}
-
-	var subject = '';
-	var message = 'THD,\n\nPlease forward attached ' + filename;
-
-	if (EMAIL_RESPONSES.ADRUrgency) {
-		subject += EMAIL_RESPONSES.ADRUrgency + ' ';
-	}
-
-	if (EMAIL_RESPONSES.ADRNum) {
-		subject += EMAIL_RESPONSES.ADRNum;
-		message += ' to operator via ADR: ' + EMAIL_RESPONSES.ADRNum;
-	}
-
-	message += '\n\nThanks and Regards';
-
-	ACTIVE_DOC.mailDoc({
-		bUI: true,
-		cTo: 'thd@dehavilland.com',
-		cCC: '',
-		cSubject: subject,
-		cMsg: message
 	});
 
 	return true;
@@ -520,10 +447,10 @@ function askUserPrompts(prompts) {
 * Add button to toolbar
 */
 app.addToolButton({
-	cName: 'RD Extract-Save-Email',
-	cLabel: 'RD Extract-Save-Email',
+	cName: 'RD Extract-Save',
+	cLabel: 'RD Extract-Save',
 	cExec: 'rdExtractAndEmail()',
-	cTooltext: 'Extract and Save Sect 1 & 2, Send RD to THD',
+	cTooltext: 'Extract and Save Sect 1 & 2',
 	cEnable: true,
 	nPos: -1
 }); 
