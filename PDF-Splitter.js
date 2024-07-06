@@ -1,5 +1,5 @@
 /*
-* Main RD Extraction Function
+* Main RD Extraction Function, for use in PDF X-Change
 * Version: 2.4.1 - July 2024
 * Returns: boolean (true or false)
 */
@@ -424,8 +424,8 @@ function askUserPrompts(prompts) {
 * Add button to toolbar
 */
 app.addToolButton({
-    cName: 'RD Extract-Save',
-    cLabel: 'RD Extract-Save',
+    cName: 'RD Extract-Save v2.4.1',
+    cLabel: 'RD Extract-Save v2.4.1',
     cExec: 'rdExtractAndEmail()',
     cTooltext: 'Extract and Save Sect 1 & 2',
     cEnable: true,
