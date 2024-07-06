@@ -1,6 +1,6 @@
 Version 2.4.1:
 * Various fixes and comment improvements
-* Remvoed email creation function, removed bill-sheet 1 checking function, added Dash 2-7, CL, and Shorts functionality
+* Removed email creation function, removed bill-sheet 1 checking function, added Dash 2-7, CL, and Shorts functionality
 
 Version 2.4:
 * Added functionality to cover CL aircraft and Dash 2-7, removed attached bill prompt
